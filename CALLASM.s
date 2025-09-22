@@ -1,0 +1,9 @@
+		AREA |.text|, CODE, READONLY, ALIGN=2
+		THUMB
+		REQUIRE8
+		PRESERVE8
+		EXPORT CALLASM
+CALLASM
+		blx r0
+		bx lr
+		end

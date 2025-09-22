@@ -23,9 +23,15 @@ void RD(void);
 void RM(char **tokens);
 void PrintRD(uint32_t *regs, uint8_t index);
 void MD(char **tokens);
+void MM(char **tokens);
+void BF(char **tokens);
+void CALL(char **tokens);
 extern void RMASM(uint8_t numReg, uint32_t newData);
 extern void RDASM(uint32_t *regs);
 extern void MDASM(uint32_t start, uint32_t end);
+extern void MMASM(uint32_t addr, uint32_t data, uint32_t byteSize);
+extern void BFASM(uint32_t start, uint32_t end, uint32_t data, uint32_t byteSize);
+extern void CALLASM(uint32_t addr);
 
 
 // DEFINICIONES
@@ -79,6 +85,12 @@ void terminal(char *cmd){
         RM(tokens);
     } else if(strcmp(tokens[0], "MD")==0){
 				MD(tokens);
+		}else if(strcmp(tokens[0], "MM")==0){
+				MM(tokens);
+		}else if(strcmp(tokens[0], "BF")==0){
+				BF(tokens);
+		}else if(strcmp(tokens[0], "CALL")==0){
+				CALL(tokens);
 		}else if(strcmp(tokens[0], "h")==0){
 			USART2_String("Comados de este proyecto: \r\n");
 			USART2_String("RD \r\n");
@@ -167,6 +179,68 @@ void MD(char **tokens){
     }
 }
 
+/*---------------------MEMORY MODIFY---------------*/
+
+void MM(char **tokens){
+	uint32_t addr = strtol(tokens[1], NULL, 16);
+	uint32_t data = strtol(tokens[2], NULL, 16);
+	uint32_t byteSize = 1;
+	if(tokens[1] == NULL || tokens[2] == NULL){
+			USART2_String("Verificar sintaxis del comando: MM addr data [size]\r\n");
+			return;
+	}
+	if(tokens[3] !=NULL){
+		byteSize = atoi(tokens[3]);
+		if(byteSize != 1 && byteSize != 2 && byteSize != 4){
+			USART2_String("[Size] debe ser 1, 2 o 4");
+		}
+	}
+	MMASM(addr, data, byteSize);
+	sprintf(tx_buffer, "MM: 0x%08X en 0x%08X (%u bytes)\r\n", data, addr, byteSize);
+  USART2_String(tx_buffer);
+}
+
+/*---------------------BLOCK FILL---------------*/
+void BF(char **tokens){
+	uint32_t start = strtoul(tokens[1], NULL, 16);
+  uint32_t end   = strtoul(tokens[2], NULL, 16);
+  uint32_t data  = strtoul(tokens[3], NULL, 16);
+	uint32_t byteSize = 1;
+	if(tokens[1] == NULL || tokens[2] == NULL || tokens[3] ==NULL){
+			USART2_String("Verificar sintaxis del comando: BF start end data [size]\r\n");
+			return;
+	}
+	if(start > end){
+			uint32_t tmp = start;
+			start = end;
+			end = tmp;
+			USART2_String("Error de sintaxis, se intercambiaron start y end \r\n");
+	} 
+	if(tokens[4] != NULL){
+			byteSize = atoi(tokens[4]);
+	}
+	if(byteSize != 1 && byteSize != 2 && byteSize != 4){
+			USART2_String("Error: size invalido (solo 1, 2 o 4)\r\n");
+			return;
+	}
+	BFASM(start, end, data, byteSize);
+	sprintf(tx_buffer, "BF: 0x%08X desde 0x%08X hasta 0x%08X con size %u\r\n", data, start, end, byteSize);
+	USART2_String(tx_buffer);
+}
+/*---------------------CALL---------------*/
+void CALL(char **tokens){
+	uint32_t addr = strtoul(tokens[1], NULL, 16);
+	if(tokens[1] == NULL){
+		USART2_String("Verificar sintaxis del comando: CALL addr \r\n");
+		return;
+	}
+	if(addr<0x08000000 || addr >0x080fffff){
+		USART2_String("Fuera de rango de flash (0x08000000 - 0x080fffff)\r\n");
+		return;
+	}
+	CALLASM(addr);
+  USART2_String("Subrutina ejecutada y retorno al monitor\r\n");
+}
 
 // no borrar
 void USART2_IRQHandler(void){

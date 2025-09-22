@@ -404,6 +404,21 @@
               <FileType>2</FileType>
               <FilePath>.\MDASM.s</FilePath>
             </File>
+            <File>
+              <FileName>MMASM.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\MMASM.s</FilePath>
+            </File>
+            <File>
+              <FileName>BFASM.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\BFASM.s</FilePath>
+            </File>
+            <File>
+              <FileName>CALLASM.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\CALLASM.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
